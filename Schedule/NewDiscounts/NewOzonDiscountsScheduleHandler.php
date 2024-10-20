@@ -26,8 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Ozon\Promotion\Schedule\NewDiscounts;
 
 use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Ozon\Orders\Messenger\Schedules\NewOrders\NewOzonOrdersScheduleMessage;
-use BaksDev\Ozon\Products\Messenger\Schedules\NewDiscounts\NewDiscountsOzonScheduleMessage;
+use BaksDev\Ozon\Promotion\Messenger\Schedules\NewDiscounts\NewDiscountsOzonScheduleMessage;
 use BaksDev\Ozon\Repository\AllProfileToken\AllProfileOzonTokenInterface;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;

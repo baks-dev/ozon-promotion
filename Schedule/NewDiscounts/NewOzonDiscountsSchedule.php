@@ -49,6 +49,6 @@ final class NewOzonDiscountsSchedule implements ScheduleInterface
      */
     public function getInterval(): DateInterval
     {
-        return DateInterval::createFromDateString('1 minutes');
+        return DateInterval::createFromDateString('5 seconds');
     }
 }
