@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2024.  Baks.dev <admin@baks.dev>
- *
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,7 +27,6 @@ namespace BaksDev\Ozon\Promotion\Api\Discounts;
 
 use App\Kernel;
 use BaksDev\Ozon\Api\Ozon;
-use DomainException;
 use InvalidArgumentException;
 
 final class UpdateOzonApproveDiscountRequest extends Ozon
@@ -67,10 +66,9 @@ final class UpdateOzonApproveDiscountRequest extends Ozon
     public function approve(): bool
     {
 
-
         if($this->isExecuteEnvironment() === false)
         {
-            //return true;
+            return true;
         }
 
         if(empty($this->id))
@@ -106,7 +104,7 @@ final class UpdateOzonApproveDiscountRequest extends Ozon
                                 'id' => $this->id,
                                 'approved_price' => $this->price,
                                 'seller_comment' => 'Благодарим вас за выбор нашего магазина! Мы очень рады, что вы решили приобрести нашу продукцию. Ваше доверие для нас имеет огромное значение, и мы уверены, что вы останетесь довольны покупкой. '.PHP_EOL.PHP_EOL.' Если у вас возникнут вопросы или потребуется помощь, не стесняйтесь обращаться к нашей команде.',
-                                'approved_quantity_min' => $this->quantity,
+                                'approved_quantity_min' => 1,
                                 'approved_quantity_max' => $this->quantity
                             ]
                         ]
