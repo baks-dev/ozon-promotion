@@ -49,12 +49,13 @@ final readonly class ApproveDiscountOzonHandler
     {
         $Deduplicator = $this->deduplicator
             ->namespace('ozon-promotion')
-            ->deduplication([$message->getQuantity(), self::class]);
+            ->deduplication([$message->getId(), self::class]);
 
         if($Deduplicator->isExecuted())
         {
             return;
         }
+
 
         /**
          * Получаем минимальную цену и округляем до сотых рублей
@@ -63,18 +64,29 @@ final readonly class ApproveDiscountOzonHandler
         $requested = $message->getDiscount() + 100;
         $price = round($requested, -2);
 
-        $this->updateOzonApproveDiscountRequest
+        $approve = $this->updateOzonApproveDiscountRequest
             ->profile($message->getProfile())
             ->identifier($message->getId())
             ->quantity($message->getQuantity())
             ->price($price)
             ->approve();
 
-        $this->logger->info(
-            sprintf('Согласованная цена заявке %s => %s', $message->getId(), $price),
+        $Deduplicator->save();
+
+        if($approve)
+        {
+            $this->logger->info(
+                sprintf('Согласованная цена заявке %s => %s', $message->getId(), $price),
+                ['profile' => (string) $message->getProfile()]
+            );
+
+            return;
+        }
+
+        $this->logger->critical(
+            sprintf('Ошибка при согласовании заявки %s => %s', $message->getId(), $price),
             ['profile' => (string) $message->getProfile()]
         );
 
-        $Deduplicator->save();
     }
 }
