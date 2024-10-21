@@ -25,10 +25,12 @@ declare(strict_types=1);
 
 namespace BaksDev\Ozon\Promotion\Messenger\Schedules\NewDiscounts;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\GetOzonDiscountsRequest;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\OzonDiscountDTO;
 use BaksDev\Ozon\Promotion\Messenger\Schedules\ApproveDiscount\ApproveDiscountOzonMessage;
+use DateInterval;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 0)]
@@ -37,10 +39,23 @@ final readonly class NewDiscountsOzonScheduleHandler
     public function __construct(
         private GetOzonDiscountsRequest $getOzonDiscountsRequest,
         private MessageDispatchInterface $messageDispatch,
+        private DeduplicatorInterface $deduplicator
     ) {}
 
     public function __invoke(NewDiscountsOzonScheduleMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->expiresAfter(DateInterval::createFromDateString('5 seconds'))
+            ->namespace('ozon-promotion')
+            ->deduplication([$message, self::class]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+        $Deduplicator->save();
+
         $discounts = $this->getOzonDiscountsRequest
             ->profile($message->getProfile())
             ->findAll();
