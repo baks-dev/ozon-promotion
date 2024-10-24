@@ -28,7 +28,6 @@ namespace BaksDev\Ozon\Promotion\Schedule\NewDiscounts;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Ozon\Promotion\Messenger\Schedules\NewDiscounts\NewDiscountsOzonScheduleMessage;
 use BaksDev\Ozon\Repository\AllProfileToken\AllProfileOzonTokenInterface;
-use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -36,7 +35,6 @@ final readonly class NewOzonDiscountsScheduleHandler
 {
     public function __construct(
         private AllProfileOzonTokenInterface $allProfileToken,
-        private UserByUserProfileInterface $userByUserProfile,
         private MessageDispatchInterface $messageDispatch,
     ) {}
 
@@ -51,16 +49,10 @@ final readonly class NewOzonDiscountsScheduleHandler
         {
             foreach($profiles as $profile)
             {
-                /** Получаем идентификатор пользователя */
-                $User = $this->userByUserProfile->forProfile($profile)->findUser();
-
-                if($User)
-                {
-                    $this->messageDispatch->dispatch(
-                        message: new NewDiscountsOzonScheduleMessage($profile),
-                        transport: (string) $profile,
-                    );
-                }
+                $this->messageDispatch->dispatch(
+                    message: new NewDiscountsOzonScheduleMessage($profile),
+                    transport: (string) $profile,
+                );
             }
         }
     }

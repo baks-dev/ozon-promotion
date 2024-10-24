@@ -45,6 +45,9 @@ final readonly class ApproveDiscountOzonHandler
         $this->logger = $ozonPromotionLogger;
     }
 
+    /**
+     * Метод рассчитывает от минимальной цены максимально допустимый размер скидки
+     */
     public function __invoke(ApproveDiscountOzonMessage $message): void
     {
         $Deduplicator = $this->deduplicator
@@ -55,7 +58,6 @@ final readonly class ApproveDiscountOzonHandler
         {
             return;
         }
-
 
         /**
          * Получаем минимальную цену и округляем до сотых рублей

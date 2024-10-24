@@ -42,6 +42,9 @@ final readonly class NewDiscountsOzonScheduleHandler
         private DeduplicatorInterface $deduplicator
     ) {}
 
+    /**
+     * Метод получает все заявки на скидку, и создает сообщение на одобрение
+     */
     public function __invoke(NewDiscountsOzonScheduleMessage $message): void
     {
         $Deduplicator = $this->deduplicator
