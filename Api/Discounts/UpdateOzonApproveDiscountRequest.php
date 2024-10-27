@@ -104,7 +104,7 @@ final class UpdateOzonApproveDiscountRequest extends Ozon
                                 'id' => $this->id,
                                 'approved_price' => $this->price,
                                 'seller_comment' => 'Благодарим вас за выбор нашего магазина! Мы очень рады, что вы решили приобрести нашу продукцию. Ваше доверие для нас имеет огромное значение, и мы уверены, что вы останетесь довольны покупкой. '.PHP_EOL.PHP_EOL.' Если у вас возникнут вопросы или потребуется помощь, не стесняйтесь обращаться к нашей команде.',
-                                'approved_quantity_min' => 1,
+                                'approved_quantity_min' => $this->quantity,
                                 'approved_quantity_max' => $this->quantity
                             ]
                         ]
