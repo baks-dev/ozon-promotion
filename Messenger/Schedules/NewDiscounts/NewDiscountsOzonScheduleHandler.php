@@ -29,15 +29,22 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\GetOzonDiscountsRequest;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\OzonDiscountDTO;
 use BaksDev\Ozon\Promotion\Messenger\Schedules\ApproveDiscount\ApproveDiscountOzonMessage;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 0)]
 final readonly class NewDiscountsOzonScheduleHandler
 {
+    private LoggerInterface $logger;
+
     public function __construct(
         private GetOzonDiscountsRequest $getOzonDiscountsRequest,
-        private MessageDispatchInterface $messageDispatch
-    ) {}
+        private MessageDispatchInterface $messageDispatch,
+        LoggerInterface $ozonPromotionLogger
+    )
+    {
+        $this->logger = $ozonPromotionLogger;
+    }
 
     /**
      * Метод получает все заявки на скидку, и создает сообщение на одобрение
@@ -56,6 +63,12 @@ final readonly class NewDiscountsOzonScheduleHandler
         /** @var OzonDiscountDTO $OzonDiscountDTO */
         foreach($discounts as $OzonDiscountDTO)
         {
+            if(false === $OzonDiscountDTO->isApproved())
+            {
+                $this->logger->warning('Получена заявка на скидку, превышающая минимальную стоимость');
+                continue;
+            }
+
             $ApproveDiscountOzonMessage = new ApproveDiscountOzonMessage(
                 $message->getProfile(),
                 $OzonDiscountDTO->getId(),
