@@ -60,8 +60,7 @@ final readonly class ApproveDiscountOzonHandler
         }
 
         /**
-         * Получаем минимальную цену и округляем до сотых рублей
-         * 100 руб накидываем как сопутствующие расходы
+         * Округляем запрашиваемую цену до сотых в пользу клиента
          */
         $requested = $message->getDiscount() - 50;
         $price = round($requested, -2);
