@@ -59,7 +59,7 @@ final readonly class NewDiscountsOzonScheduleHandler
             $ApproveDiscountOzonMessage = new ApproveDiscountOzonMessage(
                 $message->getProfile(),
                 $OzonDiscountDTO->getId(),
-                $OzonDiscountDTO->getMinPrice(),
+                $OzonDiscountDTO->getRequested(),
                 $OzonDiscountDTO->getQuantity()
             );
 

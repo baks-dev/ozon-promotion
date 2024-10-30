@@ -63,7 +63,7 @@ final readonly class ApproveDiscountOzonHandler
          * Получаем минимальную цену и округляем до сотых рублей
          * 100 руб накидываем как сопутствующие расходы
          */
-        $requested = $message->getDiscount() + 100;
+        $requested = $message->getDiscount() - 50;
         $price = round($requested, -2);
 
         $approve = $this->updateOzonApproveDiscountRequest
