@@ -10,7 +10,7 @@
 # systemctl stop baks-ozon-promotion@1.service
 
 [Unit]
-Description=Symfony messenger nginx-unit %i
+Description=ozon-promotion
 StartLimitBurst=5
 StartLimitIntervalSec=0
 
