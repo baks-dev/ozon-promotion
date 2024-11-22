@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Ozon\Promotion\Messenger\Schedules\ApproveDiscount;
+namespace BaksDev\Ozon\Promotion\Messenger\ApproveDiscount;
 
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
@@ -60,10 +60,10 @@ final readonly class ApproveDiscountOzonHandler
         }
 
         /**
-         * Округляем запрашиваемую цену до сотых в пользу клиента
+         * Округляем запрашиваемую цену до десятых в пользу клиента
          */
         $requested = $message->getDiscount() - 50;
-        $price = round($requested, -2);
+        $price = round($requested, -1);
 
         $approve = $this->updateOzonApproveDiscountRequest
             ->profile($message->getProfile())

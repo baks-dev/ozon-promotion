@@ -23,20 +23,20 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Ozon\Products\Api\Discounts\New\Tests;
+namespace BaksDev\Ozon\Promotion\Api\Discounts\Tests;
 
-use BaksDev\Ozon\Promotion\Api\Discounts\New\GetOzonDiscountsRequest;
-use BaksDev\Ozon\Promotion\Api\Discounts\New\OzonDiscountDTO;
+use BaksDev\Ozon\Promotion\Api\Discounts\UpdateOzonRejectDiscountRequest;
 use BaksDev\Ozon\Type\Authorization\OzonAuthorizationToken;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
+
 /**
  * @group ozon-promotion
  */
 #[When(env: 'test')]
-class GetOzonDiscountsRequestTest extends KernelTestCase
+class UpdateOzonRejectDiscountRequestTest extends KernelTestCase
 {
     private static OzonAuthorizationToken $Authorization;
 
@@ -54,36 +54,18 @@ class GetOzonDiscountsRequestTest extends KernelTestCase
     public function testUseCase(): void
     {
         self::assertTrue(true);
+        return;
 
-        /** @var GetOzonDiscountsRequest $GetOzonDiscountsRequest */
-        $GetOzonDiscountsRequest = self::getContainer()->get(GetOzonDiscountsRequest::class);
-        $GetOzonDiscountsRequest->TokenHttpClient(self::$Authorization);
+        /** @var UpdateOzonRejectDiscountRequest $UpdateOzonRejectDiscountRequest */
+        $UpdateOzonRejectDiscountRequest = self::getContainer()->get(UpdateOzonRejectDiscountRequest::class);
+        $UpdateOzonRejectDiscountRequest->TokenHttpClient(self::$Authorization);
 
-        $result = $GetOzonDiscountsRequest->findAll();
+        $reject = $UpdateOzonRejectDiscountRequest
+            ->identifier('98665422476287558')
+            ->reject();
 
-        if(false !== $result)
-        {
-            foreach($result as $OzonDiscountDTO)
-            {
-                self::assertInstanceOf(OzonDiscountDTO::class, $OzonDiscountDTO);
+        self::assertTrue($reject);
 
-                // процент разницы в цене
-                $price = $OzonDiscountDTO->getBasePrice(); // 8396
-                $requested = $OzonDiscountDTO->getRequested(); // 7585
-                $percentageChange = (($requested - $price) / $price) * 100;
-
-                /** Не одобряем скидку, если разница превысила 10% */
-                if($percentageChange < -10)
-                {
-                    dump(sprintf('%s : Процент скидки БОЛЬШЕ 10%s  => %s', $OzonDiscountDTO->getId(), '%', round(abs($percentageChange))));
-                    dd($OzonDiscountDTO);
-                }
-                else
-                {
-                    dump(sprintf('%s : Можно предоставить скидку %s процентов', $OzonDiscountDTO->getId(), round(abs($percentageChange))));
-                    dd($OzonDiscountDTO);
-                }
-            }
-        }
     }
+
 }

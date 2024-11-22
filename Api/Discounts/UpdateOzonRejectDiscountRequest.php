@@ -28,13 +28,9 @@ namespace BaksDev\Ozon\Promotion\Api\Discounts;
 use BaksDev\Ozon\Api\Ozon;
 use InvalidArgumentException;
 
-final class UpdateOzonApproveDiscountRequest extends Ozon
+final class UpdateOzonRejectDiscountRequest extends Ozon
 {
     private int $id;
-
-    private int|float $price;
-
-    private int $quantity;
 
     public function identifier(int|string $id): self
     {
@@ -42,29 +38,14 @@ final class UpdateOzonApproveDiscountRequest extends Ozon
         return $this;
     }
 
-    public function price(int|float $price): self
-    {
-        $this->price = $price;
-        return $this;
-    }
-
-    public function quantity(int $quantity): self
-    {
-        $this->quantity = $quantity;
-        return $this;
-    }
-
     /**
-     * Согласовать заявку на скидку
+     * Отменяет заявку на скидку
      *
-     * Вы можете согласовывать заявки в статусах: NEW — новые, SEEN — просмотренные.
-     *
-     * @see https://docs.ozon.ru/api/seller/#operation/promos_task_approve
+     * @see https://docs.ozon.ru/api/seller/#operation/promos_task_decline
      *
      */
-    public function approve(): bool
+    public function reject(): bool
     {
-
         if($this->isExecuteEnvironment() === false)
         {
             return true;
@@ -75,36 +56,16 @@ final class UpdateOzonApproveDiscountRequest extends Ozon
             throw new InvalidArgumentException('Invalid Argument Identifier');
         }
 
-        if(empty($this->price))
-        {
-            throw new InvalidArgumentException('Invalid Argument Price');
-        }
-
-        if(empty($this->quantity))
-        {
-            throw new InvalidArgumentException('Invalid Argument Quantity');
-        }
-
-        //    "id": 0,
-        //    "approved_price": 0,
-        //    "seller_comment": "string",
-        //    "approved_quantity_min": 0,
-        //    "approved_quantity_max": 0
-
-        // APPROVED
         $response = $this->TokenHttpClient()
             ->request(
                 'POST',
-                '/v1/actions/discounts-task/approve',
+                '/v1/actions/discounts-task/decline',
                 [
                     'json' => [
                         'tasks' => [
                             [
                                 'id' => $this->id,
-                                'approved_price' => $this->price,
-                                'seller_comment' => 'Благодарим вас за выбор нашего магазина! Мы очень рады, что вы решили приобрести нашу продукцию. Ваше доверие для нас имеет огромное значение, и мы уверены, что вы останетесь довольны покупкой. '.PHP_EOL.PHP_EOL.' Если у вас возникнут вопросы или потребуется помощь, не стесняйтесь обращаться к нашей команде.',
-                                'approved_quantity_min' => $this->quantity,
-                                'approved_quantity_max' => $this->quantity
+                                'seller_comment' => 'Мы вынуждены сообщить, что цена на эту продукцию очень сильно изменилась. К сожалению, в связи с этим мы не сможем предоставить дополнительную скидку. Благодарим вас за выбор нашего магазина и надеемся на ваше понимание!',
                             ]
                         ]
                     ]

@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Ozon\Promotion\Messenger\Schedules\ApproveDiscount;
+namespace BaksDev\Ozon\Promotion\Messenger\ApproveDiscount;
 
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -38,7 +38,7 @@ final readonly class ApproveDiscountOzonMessage
     /**
      * Идентификатор профиля
      */
-    private UserProfileUid $profile;
+    private string $profile;
 
     /**
      * Согласованная цена.
@@ -56,20 +56,9 @@ final readonly class ApproveDiscountOzonMessage
         int $quantity
     )
     {
-        if($profile instanceof UserProfile)
-        {
-            $profile = $profile->getId();
-        }
-
-        if(is_string($profile))
-        {
-            $profile = new UserProfileUid($profile);
-        }
-
-        $this->profile = $profile;
+        $this->profile = (string) $profile;
 
         $this->id = $id;
-
         $this->discount = $discount;
         $this->quantity = $quantity;
     }
@@ -103,7 +92,7 @@ final readonly class ApproveDiscountOzonMessage
      */
     public function getProfile(): UserProfileUid
     {
-        return $this->profile;
+        return new UserProfileUid($this->profile);
     }
 
 }
