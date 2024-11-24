@@ -56,7 +56,7 @@ final readonly class NewDiscountsOzonScheduleHandler
             ->profile($message->getProfile())
             ->findAll();
 
-        if($discounts->valid() === false)
+        if(false === $discounts || false === $discounts->valid())
         {
             return;
         }
