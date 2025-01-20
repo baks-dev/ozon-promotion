@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -29,21 +29,17 @@ namespace BaksDev\Ozon\Promotion\Messenger\ApproveDiscount;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Ozon\Promotion\Api\Discounts\UpdateOzonApproveDiscountRequest;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 0)]
 final readonly class ApproveDiscountOzonHandler
 {
-    private LoggerInterface $logger;
-
     public function __construct(
+        #[Target('ozonPromotionLogger')] private LoggerInterface $logger,
         private UpdateOzonApproveDiscountRequest $updateOzonApproveDiscountRequest,
         private DeduplicatorInterface $deduplicator,
-        LoggerInterface $ozonPromotionLogger
-    )
-    {
-        $this->logger = $ozonPromotionLogger;
-    }
+    ) {}
 
     /**
      * Метод рассчитывает от минимальной цены максимально допустимый размер скидки

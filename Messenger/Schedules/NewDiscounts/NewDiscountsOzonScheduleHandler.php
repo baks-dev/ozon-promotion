@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -31,21 +31,16 @@ use BaksDev\Ozon\Promotion\Api\Discounts\New\OzonDiscountDTO;
 use BaksDev\Ozon\Promotion\Messenger\ApproveDiscount\ApproveDiscountOzonMessage;
 use BaksDev\Ozon\Promotion\Messenger\RejectDiscount\RejectDiscountOzonMessage;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 0)]
 final readonly class NewDiscountsOzonScheduleHandler
 {
-    private LoggerInterface $logger;
-
     public function __construct(
         private GetOzonDiscountsRequest $getOzonDiscountsRequest,
         private MessageDispatchInterface $messageDispatch,
-        LoggerInterface $ozonPromotionLogger
-    )
-    {
-        $this->logger = $ozonPromotionLogger;
-    }
+    ) {}
 
     /**
      * Метод получает все заявки на скидку, и создает сообщение на одобрение
@@ -90,6 +85,9 @@ final readonly class NewDiscountsOzonScheduleHandler
                 }
             }
 
+            /**
+             * Отправляем сообщение на одобрение либо отмену скидки
+             */
             $this->messageDispatch->dispatch(
                 message: $DiscountOzonMessage,
                 transport: (string) $message->getProfile()
