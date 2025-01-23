@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,9 @@ class GetOzonDiscountsRequestTest extends KernelTestCase
         $GetOzonDiscountsRequest = self::getContainer()->get(GetOzonDiscountsRequest::class);
         $GetOzonDiscountsRequest->TokenHttpClient(self::$Authorization);
 
-        $result = $GetOzonDiscountsRequest->findAll();
+        $result = $GetOzonDiscountsRequest
+            ->unknown()
+            ->findAll();
 
         if(false !== $result)
         {
@@ -72,17 +74,22 @@ class GetOzonDiscountsRequestTest extends KernelTestCase
                 $requested = $OzonDiscountDTO->getRequested(); // 7585
                 $percentageChange = (($requested - $price) / $price) * 100;
 
+                self::assertIsInt($OzonDiscountDTO->getId());
+                self::assertIsInt($OzonDiscountDTO->getRequested()); // Цена по заявке.
+                self::assertIsInt($OzonDiscountDTO->getMinPrice()); // Минимальное значение цены
+                self::assertIsInt($OzonDiscountDTO->getBasePrice()); // Минимальное значение цены
+
                 /** Не одобряем скидку, если разница превысила 10% */
-                if($percentageChange < -10)
-                {
-                    dump(sprintf('%s : Процент скидки БОЛЬШЕ 10%s  => %s', $OzonDiscountDTO->getId(), '%', round(abs($percentageChange))));
-                    dd($OzonDiscountDTO);
-                }
-                else
-                {
-                    dump(sprintf('%s : Можно предоставить скидку %s процентов', $OzonDiscountDTO->getId(), round(abs($percentageChange))));
-                    dd($OzonDiscountDTO);
-                }
+                //                if($percentageChange < -10)
+                //                {
+                //                    dump(sprintf('%s : Процент скидки БОЛЬШЕ 10%s  => %s', $OzonDiscountDTO->getId(), '%', round(abs($percentageChange))));
+                //                    dd($OzonDiscountDTO);
+                //                }
+                //                else
+                //                {
+                //                    dump(sprintf('%s : Можно предоставить скидку %s процентов', $OzonDiscountDTO->getId(), round(abs($percentageChange))));
+                //                    dd($OzonDiscountDTO);
+                //                }
             }
         }
     }
