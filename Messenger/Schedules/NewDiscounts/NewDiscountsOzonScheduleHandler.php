@@ -85,6 +85,13 @@ final readonly class NewDiscountsOzonScheduleHandler
                 }
             }
 
+            /* TODO: ВРЕМЕННО ВСЕ ЗАЯВКИ ОТМЕНЯЕМ !!! */
+
+            $DiscountOzonMessage = new RejectDiscountOzonMessage(
+                $message->getProfile(),
+                $OzonDiscountDTO->getId()
+            );
+
             /**
              * Отправляем сообщение на одобрение либо отмену скидки
              */
