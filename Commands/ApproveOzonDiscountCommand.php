@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ namespace BaksDev\Ozon\Promotion\Commands;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\GetOzonDiscountsRequest;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\OzonDiscountDTO;
-use BaksDev\Ozon\Promotion\Messenger\Schedules\ApproveDiscount\ApproveDiscountOzonMessage;
+use BaksDev\Ozon\Promotion\Messenger\ApproveDiscount\ApproveDiscountOzonMessage;
 use BaksDev\Ozon\Repository\AllProfileToken\AllProfileOzonTokenInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -60,14 +60,20 @@ class ApproveOzonDiscountCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        /** Получаем активные токены авторизации профилей Ozon */
+        /**
+         * Получаем активные токены авторизации профилей Ozon
+         */
         $profiles = $this->allProfileOzonToken
-            //->onlyActiveToken()
+            ->onlyActiveToken()
             ->findAll();
 
         $profiles = iterator_to_array($profiles);
 
         $helper = $this->getHelper('question');
+
+        /**
+         * Интерактивная форма списка профилей
+         */
 
         $questions[] = 'Все';
 
@@ -76,49 +82,73 @@ class ApproveOzonDiscountCommand extends Command
             $questions[] = $quest->getAttr();
         }
 
+        $questions['+'] = 'Выполнить все асинхронно';
+        $questions['-'] = 'Выйти';
+
         $question = new ChoiceQuestion(
-            'Профиль пользователя',
+            'Профиль пользователя (Ctrl+C чтобы выйти)',
             $questions,
-            0
+            '+'
         );
 
         $profileName = $helper->ask($input, $output, $question);
 
-        if($profileName === 'Все')
+        /**
+         *  Выходим без выполненного запроса
+         */
+
+        if($profileName === '-' || $profileName === 'Выйти')
+        {
+            return Command::SUCCESS;
+        }
+
+
+        /**
+         * Выполняем все с возможностью асинхронно в очереди
+         */
+
+        if($profileName === '+' || $profileName === '0' || $profileName === 'Все')
         {
             /** @var UserProfileUid $profile */
             foreach($profiles as $profile)
             {
-                $this->update($profile);
+                $this->update($profile, $profileName === '+');
             }
+
+            $this->io->success('Все заявки на скидку успешно согласованы');
+            return Command::SUCCESS;
         }
-        else
+
+        /**
+         * Выполняем определенный профиль
+         */
+
+        $UserProfileUid = null;
+
+        foreach($profiles as $profile)
         {
-            $UserProfileUid = null;
-
-            foreach($profiles as $profile)
+            if($profile->getAttr() === $questions[$profileName])
             {
-                if($profile->getAttr() === $profileName)
-                {
-                    /* Присваиваем профиль пользователя */
-                    $UserProfileUid = $profile;
-                    break;
-                }
+                /* Присваиваем профиль пользователя */
+                $UserProfileUid = $profile;
+                break;
             }
-
-            if($UserProfileUid)
-            {
-                $this->update($UserProfileUid);
-            }
-
         }
 
-        $this->io->success('Все заявки на скидку успешно согласованы');
+        if($UserProfileUid)
+        {
+            $this->update($UserProfileUid);
 
+            $this->io->success('Все заявки на скидку успешно согласованы');
+            return Command::SUCCESS;
+        }
+
+
+        $this->io->success('Профиль пользователя не найден');
         return Command::SUCCESS;
     }
 
-    public function update(UserProfileUid $profile): void
+    public function update(UserProfileUid $profile, bool $async = false): void
     {
         /** Получаем все заявки на скидку */
         $discounts = $this->GetOzonDiscountsRequest
@@ -141,7 +171,8 @@ class ApproveOzonDiscountCommand extends Command
 
                 /** В консоли выполняем сообщение синхронно */
                 $this->messageDispatch->dispatch(
-                    message: $ApproveDiscountOzonMessage
+                    message: $ApproveDiscountOzonMessage,
+                    transport: $async ? (string) $profile : null
                 );
 
                 $this->io->writeln(sprintf('<fg=green>Согласовали заявку %s</>', $OzonDiscountDTO->getId()));
