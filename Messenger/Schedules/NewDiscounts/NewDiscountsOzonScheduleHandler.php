@@ -30,6 +30,7 @@ use BaksDev\Ozon\Promotion\Api\Discounts\New\GetOzonDiscountsRequest;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\OzonDiscountDTO;
 use BaksDev\Ozon\Promotion\Messenger\ApproveDiscount\ApproveDiscountOzonMessage;
 use BaksDev\Ozon\Promotion\Messenger\RejectDiscount\RejectDiscountOzonMessage;
+use BaksDev\Ozon\Repository\OzonTokensByProfile\OzonTokensByProfileInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -40,6 +41,7 @@ final readonly class NewDiscountsOzonScheduleHandler
     public function __construct(
         private GetOzonDiscountsRequest $getOzonDiscountsRequest,
         private MessageDispatchInterface $messageDispatch,
+        private OzonTokensByProfileInterface $OzonTokensByProfile
     ) {}
 
     /**
@@ -47,58 +49,86 @@ final readonly class NewDiscountsOzonScheduleHandler
      */
     public function __invoke(NewDiscountsOzonScheduleMessage $message): void
     {
-        $discounts = $this->getOzonDiscountsRequest
-            ->profile($message->getProfile())
-            ->findAll();
+        /** Получаем все токены профиля */
 
-        if(false === $discounts || false === $discounts->valid())
+        $tokensByProfile = $this->OzonTokensByProfile
+            ->onlyCardUpdate() // только обновляющие карточки
+            ->findAll($message->getProfile());
+
+        if(false === $tokensByProfile || false === $tokensByProfile->valid())
         {
             return;
         }
 
-        /** @var OzonDiscountDTO $OzonDiscountDTO */
-        foreach($discounts as $OzonDiscountDTO)
+        foreach($tokensByProfile as $OzonTokenUid)
         {
-            /** По умолчанию одобряем скидку до 10% */
-            $DiscountOzonMessage = new ApproveDiscountOzonMessage(
-                $message->getProfile(),
-                $OzonDiscountDTO->getId(),
-                $OzonDiscountDTO->getRequested(),
-                $OzonDiscountDTO->getQuantity()
-            );
+            $discounts = $this->getOzonDiscountsRequest
+                ->forTokenIdentifier($OzonTokenUid)
+                ->findAll();
 
-            /** Если скидка меньше минимальной - можем предоставить дополнительно 5% (суммарна до 10%) */
-            if(false === $OzonDiscountDTO->isApproved())
+            if(false === $discounts || false === $discounts->valid())
             {
-                $price = $OzonDiscountDTO->getBasePrice(); // 8396
-                $requested = $OzonDiscountDTO->getRequested(); // 7585
-                $percentageChange = (($requested - $price) / $price) * 100;
-
-                /** Не одобряем скидку, если разница превысила 10% */
-                if($percentageChange < -10)
-                {
-                    /** Отменяем заявку если превысила 10% */
-                    $DiscountOzonMessage = new RejectDiscountOzonMessage(
-                        $message->getProfile(),
-                        $OzonDiscountDTO->getId()
-                    );
-                }
+                return;
             }
 
-            /* TODO: ВРЕМЕННО ВСЕ ЗАЯВКИ ОТМЕНЯЕМ !!! */
+            /** @var OzonDiscountDTO $OzonDiscountDTO */
+            foreach($discounts as $OzonDiscountDTO)
+            {
 
-            $DiscountOzonMessage = new RejectDiscountOzonMessage(
-                $message->getProfile(),
-                $OzonDiscountDTO->getId()
-            );
+                /* TODO: ВРЕМЕННО ОТКЛОНЯЕМ ВСЕ ЗАЯВКИ !!! */
 
-            /**
-             * Отправляем сообщение на одобрение либо отмену скидки
-             */
-            $this->messageDispatch->dispatch(
-                message: $DiscountOzonMessage,
-                transport: (string) $message->getProfile()
-            );
+                $DiscountOzonMessage = new RejectDiscountOzonMessage(
+                    $message->getProfile(),
+                    $OzonDiscountDTO->getId(),
+                );
+
+                /**
+                 * Отправляем сообщение на отмену скидки
+                 */
+                $this->messageDispatch->dispatch(
+                    message: $DiscountOzonMessage,
+                    transport: (string) $message->getProfile(),
+                );
+
+
+                continue;
+
+
+                /** По умолчанию одобряем скидку до 10% */
+                $DiscountOzonMessage = new ApproveDiscountOzonMessage(
+                    $message->getProfile(),
+                    $OzonDiscountDTO->getId(),
+                    $OzonDiscountDTO->getRequested(),
+                    $OzonDiscountDTO->getQuantity(),
+                );
+
+                /** Если скидка меньше минимальной - можем предоставить дополнительно 5% (суммарна до 10%) */
+                if(false === $OzonDiscountDTO->isApproved())
+                {
+                    $price = $OzonDiscountDTO->getBasePrice(); // 8396
+                    $requested = $OzonDiscountDTO->getRequested(); // 7585
+                    $percentageChange = (($requested - $price) / $price) * 100;
+
+                    /** Не одобряем скидку, если разница превысила 10% */
+                    if($percentageChange < -10)
+                    {
+                        /** Отменяем заявку если превысила 10% */
+                        $DiscountOzonMessage = new RejectDiscountOzonMessage(
+                            $message->getProfile(),
+                            $OzonDiscountDTO->getId(),
+                        );
+                    }
+                }
+
+                /**
+                 * Отправляем сообщение на одобрение либо отмену скидки
+                 */
+                $this->messageDispatch->dispatch(
+                    message: $DiscountOzonMessage,
+                    transport: (string) $message->getProfile(),
+                );
+            }
+
         }
     }
 }

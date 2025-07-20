@@ -28,17 +28,19 @@ namespace BaksDev\Ozon\Promotion\Messenger\RejectDiscount;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Ozon\Promotion\Api\Discounts\UpdateOzonRejectDiscountRequest;
+use BaksDev\Ozon\Repository\OzonTokensByProfile\OzonTokensByProfileInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 0)]
-final readonly class RejectDiscountOzonHandler
+final readonly class RejectDiscountOzonDispatcher
 {
     public function __construct(
         #[Target('ozonPromotionLogger')] private LoggerInterface $logger,
         private UpdateOzonRejectDiscountRequest $UpdateOzonRejectDiscountRequest,
         private DeduplicatorInterface $deduplicator,
+        private OzonTokensByProfileInterface $OzonTokensByProfile
     ) {}
 
     /**
@@ -55,26 +57,40 @@ final readonly class RejectDiscountOzonHandler
             return;
         }
 
-        $approve = $this->UpdateOzonRejectDiscountRequest
-            ->profile($message->getProfile())
-            ->identifier($message->getId())
-            ->reject();
+        /** Получаем все токены профиля */
 
-        $Deduplicator->save();
+        $tokensByProfile = $this->OzonTokensByProfile
+            ->onlyCardUpdate() // только обновляющие карточки
+            ->findAll($message->getProfile());
 
-        if($approve)
+        if(false === $tokensByProfile || false === $tokensByProfile->valid())
         {
-            $this->logger->info(
-                sprintf('Заявка на скидку отклонена %s', $message->getId()),
-                ['profile' => (string) $message->getProfile()]
-            );
-
             return;
         }
 
-        $this->logger->critical(
-            sprintf('Ошибка при отмене заявки %s', $message->getId()),
-            ['profile' => (string) $message->getProfile()]
-        );
+        foreach($tokensByProfile as $OzonTokenUid)
+        {
+            $approve = $this->UpdateOzonRejectDiscountRequest
+                ->forTokenIdentifier($OzonTokenUid)
+                ->identifier($message->getId())
+                ->reject();
+
+            $Deduplicator->save();
+
+            if($approve)
+            {
+                $this->logger->info(
+                    sprintf('Заявка на скидку отклонена %s', $message->getId()),
+                    ['profile' => (string) $message->getProfile()],
+                );
+
+                return;
+            }
+
+            $this->logger->critical(
+                sprintf('Ошибка при отмене заявки %s', $message->getId()),
+                ['profile' => (string) $message->getProfile()],
+            );
+        }
     }
 }

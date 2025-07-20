@@ -28,17 +28,19 @@ namespace BaksDev\Ozon\Promotion\Messenger\ApproveDiscount;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Ozon\Promotion\Api\Discounts\UpdateOzonApproveDiscountRequest;
+use BaksDev\Ozon\Repository\OzonTokensByProfile\OzonTokensByProfileInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 0)]
-final readonly class ApproveDiscountOzonHandler
+final readonly class ApproveDiscountOzonDispatcher
 {
     public function __construct(
         #[Target('ozonPromotionLogger')] private LoggerInterface $logger,
         private UpdateOzonApproveDiscountRequest $updateOzonApproveDiscountRequest,
         private DeduplicatorInterface $deduplicator,
+        private OzonTokensByProfileInterface $OzonTokensByProfile
     ) {}
 
     /**
@@ -55,35 +57,48 @@ final readonly class ApproveDiscountOzonHandler
             return;
         }
 
-        /**
-         * Округляем запрашиваемую цену до десятых в пользу клиента
-         */
-        $requested = $message->getDiscount() - 50;
-        $price = round($requested, -1);
+        /** Получаем все токены профиля */
 
-        $approve = $this->updateOzonApproveDiscountRequest
-            ->profile($message->getProfile())
-            ->identifier($message->getId())
-            ->quantity($message->getQuantity())
-            ->price($price)
-            ->approve();
+        $tokensByProfile = $this->OzonTokensByProfile
+            ->onlyCardUpdate() // только обновляющие карточки
+            ->findAll($message->getProfile());
 
-        $Deduplicator->save();
-
-        if($approve)
+        if(false === $tokensByProfile || false === $tokensByProfile->valid())
         {
-            $this->logger->info(
-                sprintf('Согласованная цена заявке %s => %s', $message->getId(), $price),
-                ['profile' => (string) $message->getProfile()]
-            );
-
             return;
         }
 
-        $this->logger->critical(
-            sprintf('Ошибка при согласовании заявки %s => %s', $message->getId(), $price),
-            ['profile' => (string) $message->getProfile()]
-        );
+        foreach($tokensByProfile as $OzonTokenUid)
+        {
+            /**
+             * Округляем запрашиваемую цену до десятых в пользу клиента
+             */
+            $requested = $message->getDiscount() - 50;
+            $price = round($requested, -1);
 
+            $approve = $this->updateOzonApproveDiscountRequest
+                ->forTokenIdentifier($OzonTokenUid)
+                ->identifier($message->getId())
+                ->quantity($message->getQuantity())
+                ->price($price)
+                ->approve();
+
+            $Deduplicator->save();
+
+            if($approve)
+            {
+                $this->logger->info(
+                    sprintf('Согласованная цена заявке %s => %s', $message->getId(), $price),
+                    ['profile' => (string) $message->getProfile()],
+                );
+
+                return;
+            }
+
+            $this->logger->critical(
+                sprintf('Ошибка при согласовании заявки %s => %s', $message->getId(), $price),
+                ['profile' => (string) $message->getProfile()],
+            );
+        }
     }
 }
