@@ -39,8 +39,7 @@ final readonly class RejectDiscountOzonDispatcher
     public function __construct(
         #[Target('ozonPromotionLogger')] private LoggerInterface $logger,
         private UpdateOzonRejectDiscountRequest $UpdateOzonRejectDiscountRequest,
-        private DeduplicatorInterface $deduplicator,
-        private OzonTokensByProfileInterface $OzonTokensByProfile
+        private DeduplicatorInterface $deduplicator
     ) {}
 
     /**
@@ -57,40 +56,26 @@ final readonly class RejectDiscountOzonDispatcher
             return;
         }
 
-        /** Получаем все токены профиля */
+        $approve = $this->UpdateOzonRejectDiscountRequest
+            ->forTokenIdentifier($message->getProfile())
+            ->identifier($message->getId())
+            ->reject();
 
-        $tokensByProfile = $this->OzonTokensByProfile
-            ->onlyCardUpdate() // только обновляющие карточки
-            ->findAll($message->getProfile());
+        $Deduplicator->save();
 
-        if(false === $tokensByProfile || false === $tokensByProfile->valid())
+        if($approve)
         {
+            $this->logger->info(
+                sprintf('Заявка на скидку отклонена %s', $message->getId()),
+                ['profile' => (string) $message->getProfile()],
+            );
+
             return;
         }
 
-        foreach($tokensByProfile as $OzonTokenUid)
-        {
-            $approve = $this->UpdateOzonRejectDiscountRequest
-                ->forTokenIdentifier($OzonTokenUid)
-                ->identifier($message->getId())
-                ->reject();
-
-            $Deduplicator->save();
-
-            if($approve)
-            {
-                $this->logger->info(
-                    sprintf('Заявка на скидку отклонена %s', $message->getId()),
-                    ['profile' => (string) $message->getProfile()],
-                );
-
-                return;
-            }
-
-            $this->logger->critical(
-                sprintf('Ошибка при отмене заявки %s', $message->getId()),
-                ['profile' => (string) $message->getProfile()],
-            );
-        }
+        $this->logger->critical(
+            sprintf('Ошибка при отмене заявки %s', $message->getId()),
+            ['profile' => (string) $message->getProfile()],
+        );
     }
 }

@@ -152,7 +152,7 @@ class ApproveOzonDiscountCommand extends Command
     {
         /** Получаем все заявки на скидку */
         $discounts = $this->GetOzonDiscountsRequest
-            ->profile($profile)
+            ->forTokenIdentifier($profile)
             ->findAll();
 
         if($discounts)
