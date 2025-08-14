@@ -78,8 +78,9 @@ final readonly class NewDiscountsOzonScheduleHandler
                 /* TODO: ВРЕМЕННО ОТКЛОНЯЕМ ВСЕ ЗАЯВКИ !!! */
 
                 $DiscountOzonMessage = new RejectDiscountOzonMessage(
-                    $message->getProfile(),
-                    $OzonDiscountDTO->getId(),
+                    profile: $message->getProfile(),
+                    identifier: $OzonTokenUid,
+                    id: $OzonDiscountDTO->getId(),
                 );
 
                 /**
@@ -114,8 +115,9 @@ final readonly class NewDiscountsOzonScheduleHandler
                     {
                         /** Отменяем заявку если превысила 10% */
                         $DiscountOzonMessage = new RejectDiscountOzonMessage(
-                            $message->getProfile(),
-                            $OzonDiscountDTO->getId(),
+                            profile: $message->getProfile(),
+                            identifier: $OzonTokenUid,
+                            id: $OzonDiscountDTO->getId(),
                         );
                     }
                 }

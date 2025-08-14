@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Ozon\Promotion\Messenger\RejectDiscount;
 
+use BaksDev\Ozon\Type\Id\OzonTokenUid;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
@@ -40,32 +41,35 @@ final readonly class RejectDiscountOzonMessage
      */
     private string $profile;
 
+    /**
+     * Идентификатор токена авторизации
+     */
+    private string $identifier;
+
     public function __construct(
         UserProfile|UserProfileUid|string $profile,
+        OzonTokenUid|string $identifier,
         int $id
     )
     {
         $this->profile = (string) $profile;
-
+        $this->identifier = (string) $identifier;
         $this->id = $id;
-
     }
 
-    /**
-     * Id
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-
-    /**
-     * Profile
-     */
     public function getProfile(): UserProfileUid
     {
         return new UserProfileUid($this->profile);
+    }
+
+    public function getIdentifier(): OzonTokenUid
+    {
+        return new OzonTokenUid($this->identifier);
     }
 
 }

@@ -57,7 +57,7 @@ final readonly class RejectDiscountOzonDispatcher
         }
 
         $approve = $this->UpdateOzonRejectDiscountRequest
-            ->forTokenIdentifier($message->getProfile())
+            ->forTokenIdentifier($message->getIdentifier())
             ->identifier($message->getId())
             ->reject();
 
@@ -67,7 +67,10 @@ final readonly class RejectDiscountOzonDispatcher
         {
             $this->logger->info(
                 sprintf('Заявка на скидку отклонена %s', $message->getId()),
-                ['profile' => (string) $message->getProfile()],
+                [
+                    'profile' => (string) $message->getProfile(),
+                    'token' => (string) $message->getIdentifier(),
+                ],
             );
 
             return;
@@ -75,7 +78,10 @@ final readonly class RejectDiscountOzonDispatcher
 
         $this->logger->critical(
             sprintf('Ошибка при отмене заявки %s', $message->getId()),
-            ['profile' => (string) $message->getProfile()],
+            [
+                'profile' => (string) $message->getProfile(),
+                'token' => (string) $message->getIdentifier(),
+            ],
         );
     }
 }
