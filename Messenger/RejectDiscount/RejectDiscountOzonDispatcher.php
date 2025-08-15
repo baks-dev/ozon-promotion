@@ -56,14 +56,14 @@ final readonly class RejectDiscountOzonDispatcher
             return;
         }
 
+        $Deduplicator->save();
+
         $approve = $this->UpdateOzonRejectDiscountRequest
             ->forTokenIdentifier($message->getIdentifier())
             ->identifier($message->getId())
             ->reject();
 
-        $Deduplicator->save();
-
-        if($approve)
+        if(true === $approve)
         {
             $this->logger->info(
                 sprintf('Заявка на скидку отклонена %s', $message->getId()),
@@ -83,5 +83,7 @@ final readonly class RejectDiscountOzonDispatcher
                 'token' => (string) $message->getIdentifier(),
             ],
         );
+
+        $Deduplicator->delete();
     }
 }

@@ -83,6 +83,7 @@ final class UpdateOzonRejectDiscountRequest extends Ozon
         if($response->getStatusCode() !== 200)
         {
             $this->logger->critical($content['code'].': '.$content['message'], [self::class.':'.__LINE__]);
+
             return false;
         }
 
