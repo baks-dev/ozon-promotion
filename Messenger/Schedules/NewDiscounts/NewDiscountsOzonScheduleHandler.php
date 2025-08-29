@@ -68,7 +68,7 @@ final readonly class NewDiscountsOzonScheduleHandler
 
             if(false === $discounts || false === $discounts->valid())
             {
-                return;
+                continue;
             }
 
             /** @var OzonDiscountDTO $OzonDiscountDTO */
