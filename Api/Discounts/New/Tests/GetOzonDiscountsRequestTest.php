@@ -30,12 +30,11 @@ use BaksDev\Ozon\Promotion\Api\Discounts\New\GetOzonDiscountsRequest;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\OzonDiscountDTO;
 use BaksDev\Ozon\Type\Authorization\OzonAuthorizationToken;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group ozon-promotion
- */
+#[Group('ozon-promotion')]
 #[When(env: 'test')]
 class GetOzonDiscountsRequestTest extends KernelTestCase
 {
