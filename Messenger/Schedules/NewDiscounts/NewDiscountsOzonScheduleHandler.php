@@ -25,14 +25,14 @@ declare(strict_types=1);
 
 namespace BaksDev\Ozon\Promotion\Messenger\Schedules\NewDiscounts;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\GetOzonDiscountsRequest;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\OzonDiscountDTO;
 use BaksDev\Ozon\Promotion\Messenger\ApproveDiscount\ApproveDiscountOzonMessage;
 use BaksDev\Ozon\Promotion\Messenger\RejectDiscount\RejectDiscountOzonMessage;
+use BaksDev\Ozon\Promotion\Schedule\NewDiscounts\NewOzonDiscountsSchedule;
 use BaksDev\Ozon\Repository\OzonTokensByProfile\OzonTokensByProfileInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 0)]
@@ -41,7 +41,8 @@ final readonly class NewDiscountsOzonScheduleHandler
     public function __construct(
         private GetOzonDiscountsRequest $getOzonDiscountsRequest,
         private MessageDispatchInterface $messageDispatch,
-        private OzonTokensByProfileInterface $OzonTokensByProfile
+        private OzonTokensByProfileInterface $OzonTokensByProfile,
+        private DeduplicatorInterface $Deduplicator,
     ) {}
 
     /**
@@ -49,6 +50,27 @@ final readonly class NewDiscountsOzonScheduleHandler
      */
     public function __invoke(NewDiscountsOzonScheduleMessage $message): void
     {
+        /**
+         * Ограничиваем периодичность запросов
+         */
+
+        $DeduplicatorExec = $this->Deduplicator
+            ->namespace('ozon-orders')
+            ->expiresAfter(NewOzonDiscountsSchedule::INTERVAL)
+            ->deduplication([
+                (string) $message->getProfile(),
+                self::class,
+            ]);
+
+        if($DeduplicatorExec->isExecuted())
+        {
+            return;
+        }
+
+        /* @see строку :194 */
+        $DeduplicatorExec->save();
+
+
         /** Получаем все токены профиля */
 
         $tokensByProfile = $this->OzonTokensByProfile
@@ -132,5 +154,7 @@ final readonly class NewDiscountsOzonScheduleHandler
             }
 
         }
+
+        $DeduplicatorExec->delete();
     }
 }
