@@ -74,8 +74,9 @@ final readonly class NewDiscountsOzonScheduleHandler
         /** Получаем все токены профиля */
 
         $tokensByProfile = $this->OzonTokensByProfile
+            ->forProfile($message->getProfile())
             ->onlyCardUpdate() // только обновляющие карточки
-            ->findAll($message->getProfile());
+            ->findAll();
 
         if(false === $tokensByProfile || false === $tokensByProfile->valid())
         {
