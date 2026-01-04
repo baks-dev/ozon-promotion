@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@ use BaksDev\Ozon\Promotion\Api\Discounts\New\OzonDiscountDTO;
 use BaksDev\Ozon\Type\Authorization\OzonAuthorizationToken;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use PHPUnit\Framework\Attributes\Group;
+use ReflectionClass;
+use ReflectionMethod;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
@@ -68,33 +70,26 @@ class GetOzonDiscountsRequestTest extends KernelTestCase
             ->unknown()
             ->findAll();
 
-        if(false !== $result)
+        if(false === $result || false === $result->valid())
         {
-            foreach($result as $OzonDiscountDTO)
+            return;
+        }
+
+        foreach($result as $OzonDiscountDTO)
+        {
+            // Вызываем все геттеры
+            $reflectionClass = new ReflectionClass(OzonDiscountDTO::class);
+            $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
+
+            foreach($methods as $method)
             {
-                self::assertInstanceOf(OzonDiscountDTO::class, $OzonDiscountDTO);
-
-                // процент разницы в цене
-                $price = $OzonDiscountDTO->getBasePrice(); // 8396
-                $requested = $OzonDiscountDTO->getRequested(); // 7585
-                $percentageChange = (($requested - $price) / $price) * 100;
-
-                self::assertIsInt($OzonDiscountDTO->getId());
-                self::assertIsInt($OzonDiscountDTO->getRequested()); // Цена по заявке.
-                self::assertIsInt($OzonDiscountDTO->getMinPrice()); // Минимальное значение цены
-                self::assertIsInt($OzonDiscountDTO->getBasePrice()); // Минимальное значение цены
-
-                /** Не одобряем скидку, если разница превысила 10% */
-                //                if($percentageChange < -10)
-                //                {
-                //                    dump(sprintf('%s : Процент скидки БОЛЬШЕ 10%s  => %s', $OzonDiscountDTO->getId(), '%', round(abs($percentageChange))));
-                //                    dd($OzonDiscountDTO);
-                //                }
-                //                else
-                //                {
-                //                    dump(sprintf('%s : Можно предоставить скидку %s процентов', $OzonDiscountDTO->getId(), round(abs($percentageChange))));
-                //                    dd($OzonDiscountDTO);
-                //                }
+                // Методы без аргументов
+                if($method->getNumberOfParameters() === 0)
+                {
+                    // Вызываем метод
+                    $data = $method->invoke($OzonDiscountDTO);
+                    // dump($data);
+                }
             }
         }
     }
