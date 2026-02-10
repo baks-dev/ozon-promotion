@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@ namespace BaksDev\Ozon\Promotion\Messenger\Schedules\NewDiscounts;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Ozon\Promotion\Api\Discounts\New\GetOzonDiscountsRequest;
-use BaksDev\Ozon\Promotion\Api\Discounts\New\OzonDiscountDTO;
 use BaksDev\Ozon\Promotion\Messenger\ApproveDiscount\ApproveDiscountOzonMessage;
 use BaksDev\Ozon\Promotion\Messenger\RejectDiscount\RejectDiscountOzonMessage;
 use BaksDev\Ozon\Promotion\Schedule\NewDiscounts\NewOzonDiscountsSchedule;
@@ -94,9 +93,17 @@ final readonly class NewDiscountsOzonScheduleHandler
                 continue;
             }
 
-            /** @var OzonDiscountDTO $OzonDiscountDTO */
             foreach($discounts as $OzonDiscountDTO)
             {
+                $DeduplicatorDiscount = $this->Deduplicator->deduplication([
+                    $OzonDiscountDTO->getId(),
+                    self::class,
+                ]);
+
+                if($DeduplicatorDiscount->isExecuted())
+                {
+                    continue;
+                }
 
                 /* TODO: ВРЕМЕННО ОТКЛОНЯЕМ ВСЕ ЗАЯВКИ !!! */
 
@@ -114,6 +121,7 @@ final readonly class NewDiscountsOzonScheduleHandler
                     transport: (string) $message->getProfile(),
                 );
 
+                $DeduplicatorDiscount->save();
 
                 continue;
 
