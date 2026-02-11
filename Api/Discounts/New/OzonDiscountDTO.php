@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -55,51 +55,52 @@ final class OzonDiscountDTO
 
     public function __construct(array $data)
     {
-
         $this->id = (int) $data['id'];
         $this->requested = $data['requested_price'];
         $this->min = $data['min_auto_price'];
-        $this->base = $data['base_price'];
+        $this->base = $data['original_price'];
         $this->quantity = $data['requested_quantity_max'];
 
 
         /*
-        array:35 [
-      "id" => 94438465107720019
-      "created_at" => "2024-10-06T21:07:54.556591Z"
-      "end_at" => "2024-10-06T21:07:54.556591Z"
-      "edited_till" => "2024-10-07T18:11:18.688974Z"
-      "status" => "DECLINED"
-      "customer_name" => "Никита Ю."
-      "sku" => 1714239185
-      "user_comment" => ""
-      "seller_comment" => ""
-      "requested_price" => 8075
-      "approved_price" => 0
-      "original_price" => 8500
-      "discount" => 4689
-      "discount_percent" => 37
-      "base_price" => 12764
-      "min_auto_price" => 12041
-      "prev_task_id" => 0
-      "is_damaged" => false
-      "moderated_at" => "2024-10-07T18:10:18.688974Z"
-      "approved_discount" => 0
-      "approved_discount_percent" => 0
-      "is_purchased" => false
-      "is_auto_moderated" => false
-      "offer_id" => "PL01-19-235-55-105R"
-      "email" => "baksdevelopment@gmail.com"
-      "first_name" => ""
-      "last_name" => ""
-      "patronymic" => ""
-      "approved_quantity_min" => 0
-      "approved_quantity_max" => 0
-      "requested_quantity_min" => 1
-      "requested_quantity_max" => 1
-      "requested_price_with_fee" => 0
-      "approved_price_with_fee" => 0
-      "approved_price_fee_percent" => 0
+
+[
+    'tasks' => [
+        [
+            'approved_discount' => 0,
+            'approved_price' => 0,
+            'approved_quantity_max' => 0,
+            'auto_moderated_info' => [
+                'max_percent' => 0,
+                'max_price' => 0,
+                'min_percent' => 0,
+                'min_price' => 0
+            ],
+            'created_at' => '2019-08-24T14:15:22Z',
+            'edited_till' => '2019-08-24T14:15:22Z',
+            'edited_till_duration' => 0,
+            'email' => 'string',
+            'end_at' => '2019-08-24T14:15:22Z',
+            'end_at_duration' => 0,
+            'first_name' => 'string',
+            'id' => 0,
+            'is_auto_moderated' => true,
+            'last_name' => 'string',
+            'min_auto_price' => 0,
+            'moderated_at' => '2019-08-24T14:15:22Z',
+            'name' => 'string',
+            'original_price' => 0,
+            'patronymic' => 'string',
+            'reduction_factor' => 0,
+            'requested_discount' => 0,
+            'requested_price' => 0,
+            'requested_quantity_max' => 0,
+            'sku' => 0,
+            'status' => 'ALL'
+        ]
+    ]
+];
+
     ]
 
  */

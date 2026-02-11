@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ final class GetOzonDiscountsRequest extends Ozon
         $response = $this->TokenHttpClient()
             ->request(
                 'POST',
-                '/v1/actions/discounts-task/list',
+                '/v2/actions/discounts-task/list',
                 [
                     'json' => [
                         'status' => $this->status, // APPROVED
@@ -84,12 +84,12 @@ final class GetOzonDiscountsRequest extends Ozon
             return false;
         }
 
-        if(empty($content['result']))
+        if(empty($content['tasks']))
         {
             return false;
         }
 
-        foreach($content['result'] as $item)
+        foreach($content['tasks'] as $item)
         {
             yield new OzonDiscountDTO($item);
         }
