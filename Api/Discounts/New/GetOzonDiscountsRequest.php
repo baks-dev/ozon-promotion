@@ -71,9 +71,9 @@ final class GetOzonDiscountsRequest extends Ozon
                     'json' => [
                         'status' => $this->status, // APPROVED
                         'page' => 1,
-                        'limit' => 50
-                    ]
-                ]
+                        'limit' => 50,
+                    ],
+                ],
             );
 
         $content = $response->toArray(false);

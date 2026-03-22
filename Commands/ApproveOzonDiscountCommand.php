@@ -88,7 +88,7 @@ class ApproveOzonDiscountCommand extends Command
         $question = new ChoiceQuestion(
             'Профиль пользователя (Ctrl+C чтобы выйти)',
             $questions,
-            '+'
+            '+',
         );
 
         $profileName = $helper->ask($input, $output, $question);
@@ -166,13 +166,13 @@ class ApproveOzonDiscountCommand extends Command
                     $profile,
                     $OzonDiscountDTO->getId(),
                     $OzonDiscountDTO->getMinPrice(),
-                    $OzonDiscountDTO->getQuantity()
+                    $OzonDiscountDTO->getQuantity(),
                 );
 
                 /** В консоли выполняем сообщение синхронно */
                 $this->messageDispatch->dispatch(
                     message: $ApproveDiscountOzonMessage,
-                    transport: $async ? (string) $profile : null
+                    transport: $async ? (string) $profile : null,
                 );
 
                 $this->io->writeln(sprintf('<fg=green>Согласовали заявку %s</>', $OzonDiscountDTO->getId()));
