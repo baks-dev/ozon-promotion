@@ -27,7 +27,9 @@ namespace BaksDev\Ozon\Promotion\Api\Discounts\New;
 
 use BaksDev\Ozon\Api\Ozon;
 use Generator;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
+#[Autoconfigure(shared: false)]
 final class GetOzonDiscountsRequest extends Ozon
 {
     private string $status = 'NEW';

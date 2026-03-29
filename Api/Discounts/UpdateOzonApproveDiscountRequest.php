@@ -27,7 +27,9 @@ namespace BaksDev\Ozon\Promotion\Api\Discounts;
 
 use BaksDev\Ozon\Api\Ozon;
 use InvalidArgumentException;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
+#[Autoconfigure(shared: false)]
 final class UpdateOzonApproveDiscountRequest extends Ozon
 {
     private int $id;
