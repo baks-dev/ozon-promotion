@@ -32,9 +32,11 @@ use BaksDev\Ozon\Promotion\Messenger\ApproveDiscount\ApproveDiscountOzonMessage;
 use BaksDev\Ozon\Promotion\Messenger\RejectDiscount\RejectDiscountOzonMessage;
 use BaksDev\Ozon\Promotion\Schedule\NewDiscounts\NewOzonDiscountsSchedule;
 use BaksDev\Ozon\Repository\OzonTokensByProfile\OzonTokensByProfileInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 0)]
+#[Autoconfigure(shared: false)]
 final readonly class NewDiscountsOzonScheduleHandler
 {
     public function __construct(

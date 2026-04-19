@@ -30,10 +30,12 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Ozon\Promotion\Api\Discounts\UpdateOzonRejectDiscountRequest;
 use BaksDev\Ozon\Repository\OzonTokensByProfile\OzonTokensByProfileInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 0)]
+#[Autoconfigure(shared: false)]
 final readonly class RejectDiscountOzonDispatcher
 {
     public function __construct(
